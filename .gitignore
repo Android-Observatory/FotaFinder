@@ -130,3 +130,9 @@ dmypy.json
 
 # test folder
 test/
+
+# config file
+# only a template
+# version should be
+# uploaded
+config.ini
