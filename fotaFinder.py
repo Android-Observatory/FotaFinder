@@ -127,6 +127,7 @@ class FotaAnalyzer:
         
         self.extractor = None
         self.is_multi_dex = False
+        self.extracted_odex = False
 
     def __read_md5_odex_file(self):
         return pickle.load(open(config['PATHS']['MD5-ODEX-PICKLE'],'rb'))
@@ -221,6 +222,8 @@ class FotaAnalyzer:
             if len(self.extractor.get_dex_files()) > 1:
                 Debug.log("Apk %s has multiple dex" % (path_to_file))
                 self.is_multi_dex = True
+            
+            self.extracted_odex = True
 
 
         return apk, classes_dex, analysis
@@ -340,6 +343,7 @@ class FotaAnalyzer:
         information['Max_Sdk']          = max_sdk_version
         information['Min_Sdk']          = min_sdk_version
         information['System_App']       = False
+        information['Extracted_Odex']   = self.extracted_odex
 
         if shared_uid == 'android.uid.system':
             information['System_App'] = True
