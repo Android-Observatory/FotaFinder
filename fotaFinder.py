@@ -666,8 +666,8 @@ class FotaAnalyzer:
                 # check in all the xrefs in any of them
                 # is from the specified package name
                 for _, call, _ in xrefs_to_method:
+                    Debug.analyst("{} -- {} is called from -> {} -- {}".format(class_name, method_name, call.class_name, call.name))
                     if package_name in str(call.class_name):
-                        Debug.analyst("{} -- {} is called from -> {} -- {}".format(class_name, method_name, call.class_name, call.name))
                         Debug.log("Found call!")
                         return True
 
@@ -918,8 +918,8 @@ class FotaAnalyzer:
         for string in string_analysis:
             xrefs_to_string = string.get_xref_from()
             for _, method in xrefs_to_string:
+                Debug.analyst("{} is used in --> {} -- {}".format(regex_string, method.class_name, method.name))
                 if package_name in str(method.class_name):
-                    Debug.analyst("{} is used in --> {} -- {}".format(regex_string, method.class_name, method.name))
                     Debug.log("Found used string!")
                     return True
         
