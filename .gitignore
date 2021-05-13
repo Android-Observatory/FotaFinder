@@ -136,3 +136,6 @@ test/
 # version should be
 # uploaded
 config.ini
+
+# visual studio code folder
+.vscode/
