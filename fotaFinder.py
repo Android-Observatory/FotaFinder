@@ -275,6 +275,12 @@ class FotaAnalyzer:
         ssl_tls                    = False
         http                       = False
         dynamic_dex_loading        = False
+
+
+        # SAMSUNG Knox SDK
+        # https://docs.samsungknox.com/devref/knox-sdk/reference/com/samsung/android/knox/application/ApplicationPolicy.html#installApplication(java.lang.String)
+        samsung_applicationpolicy_installapplication            = False
+        samsung_applicationpolicy_installapplication_sources    = []
         
         # strings in code
         pm_install                      = False
@@ -293,8 +299,8 @@ class FotaAnalyzer:
         # specific strings
 
         # Found in com.lenovo.xlauncher
-        com_kukool_action_silient_install           = False
-        com_kukool_action_silient_install_sources   = []
+        lenovo_com_kukool_action_silient_install            = False
+        lenovo_com_kukool_action_silient_install_sources    = []
 
         # strings in names
         ota_in_package             = False
@@ -534,6 +540,13 @@ class FotaAnalyzer:
                 information['Dynamic_Dex_Loading'] = dynamic_dex_loading
                 information['Dynamic_Dex_Loading_Refs'] = dex_loaders
 
+            if self.__check_dict_key(information, 'samsung_applicationpolicy_installapplication'):
+                samsung_applicationpolicy_installapplication, samsung_applicationpolicy_installapplication_sources = self.checkApplicationPolicyInstallpackage(analysis, package_name)
+                if samsung_applicationpolicy_installapplication:
+                    Debug.log("APK uses ApplicationPolicy.installApplication")
+                information['samsung_applicationpolicy_installapplication'] = samsung_applicationpolicy_installapplication
+                information['samsung_applicationpolicy_installapplication_sources'] = samsung_applicationpolicy_installapplication_sources
+
             # check of string
 
             if self.__check_dict_key(information, 'Pm_Install'):
@@ -585,13 +598,13 @@ class FotaAnalyzer:
                 information['ota_update_zip']           = ota_update_zip
                 information['ota_update_zip_sources']   = ota_update_zip_sources
             
-            if self.__check_dict_key(information, 'com_kukool_action_silient_install'):
-                com_kukool_action_silient_install, com_kukool_action_silient_install_sources = self.checkComKukoolActionSilientInstallIntentAction(analysis, package_name)
-                if com_kukool_action_silient_install:
+            if self.__check_dict_key(information, 'lenovo_com_kukool_action_silient_install'):
+                lenovo_com_kukool_action_silient_install, lenovo_com_kukool_action_silient_install_sources = self.checkComKukoolActionSilientInstallIntentAction(analysis, package_name)
+                if lenovo_com_kukool_action_silient_install:
                     Debug.log("APK uses intent action com.kukool.ACTION_SILIENT_INSTALL")
                 
-                information['com_kukool_action_silient_install']            = com_kukool_action_silient_install
-                information['com_kukool_action_silient_install_sources']    = com_kukool_action_silient_install_sources
+                information['lenovo_com_kukool_action_silient_install']            = lenovo_com_kukool_action_silient_install
+                information['lenovo_com_kukool_action_silient_install_sources']    = lenovo_com_kukool_action_silient_install_sources
                 
             
             # commonly apks and odex will contain
@@ -899,6 +912,9 @@ class FotaAnalyzer:
         
         return list(detected_calls)
 
+    def checkApplicationPolicyInstallpackage(self, analysis, package_name):
+        return self.checkReferencesToMethod(analysis=analysis, package_name=package_name, class_name="Lcom/samsung/android/knox/application/ApplicationPolicy;", method_name="installApplication")
+
     '''
     String checks in code
     '''
@@ -1104,6 +1120,14 @@ def main():
     md5=args.md5hash
     dex=args.dex
     
+    if not os.path.exists(args.input):
+        print("File '%s' does not exists, exiting..." % (args.input))
+        sys.exit(1)
+    
+    if not os.access(args.input, os.R_OK):
+        print("File '%s' is not readable, exiting..." % (args.input))
+        sys.exit(1)
+
     if os.path.isdir(args.input):
         fotaAnalyzer = FotaAnalyzer(args.input, True, md5=md5, dex=dex)
     elif os.path.isfile(args.input):
