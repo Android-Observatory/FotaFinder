@@ -258,24 +258,49 @@ class FotaAnalyzer:
         :rtype: dict
         """
         # Function calls
-        recovery_verifyPackage     = False
-        recovery_installPackage    = False
-        updateEngine_applyPayload  = False
-        packageManager_installPackage = False
-        packageManager_deletePackage  = False
-        packageManager_grantRuntimePermission   = False
-        packageManager_revokeRuntimePermission  = False
+        recovery_verifyPackage                          = False
+        recovery_verifyPackage_sources                  = []
+        recovery_installPackage                         = False
+        recovery_installPackage_sources                 = []
+        updateEngine_applyPayload                       = False
+        updateEngine_applyPayload_sources               = []
+        packageManager_installPackage                   = False
+        packageManager_installPackage_sources           = []
+        packageManager_deletePackage                    = False
+        packageManager_deletePackage_sources            = []
+        packageManager_grantRuntimePermission           = False
+        packageManager_grantRuntimePermission_sources   = []
+        packageManager_revokeRuntimePermission          = False
+        packageManager_revokeRuntimePermission_sources  = []
         ssl_tls                    = False
         http                       = False
         dynamic_dex_loading        = False
+
+
+        # SAMSUNG Knox SDK
+        # https://docs.samsungknox.com/devref/knox-sdk/reference/com/samsung/android/knox/application/ApplicationPolicy.html#installApplication(java.lang.String)
+        samsung_applicationpolicy_installapplication            = False
+        samsung_applicationpolicy_installapplication_sources    = []
         
         # strings in code
-        pm_install                 = False
-        intent_vnd_android         = False
-        cache_recovery_command     = False
-        __update_package           = False
-        ota_certs_zip              = False        
-        ota_update_zip             = False
+        pm_install                      = False
+        pm_install_sources              = []
+        intent_vnd_android              = False
+        intent_vnd_android_sources      = []
+        cache_recovery_command          = False
+        cache_recovery_command_sources  = []
+        __update_package                = False
+        __update_package_sources        = []
+        ota_certs_zip                   = False
+        ota_certs_zip_sources           = []
+        ota_update_zip                  = False
+        ota_update_zip_sources          = []
+
+        # specific strings
+
+        # Found in com.lenovo.xlauncher
+        lenovo_com_kukool_action_silient_install            = False
+        lenovo_com_kukool_action_silient_install_sources    = []
 
         # strings in names
         ota_in_package             = False
@@ -434,53 +459,60 @@ class FotaAnalyzer:
 
             # check of functions
             if self.__check_dict_key(information, 'Recovery_VerifyPackage'):
-                recovery_verifyPackage = self.checkVerifyPackage(analysis, package_name)
+                recovery_verifyPackage, recovery_verifyPackage_sources = self.checkVerifyPackage(analysis, package_name)
                 if recovery_verifyPackage:
                     Debug.log("APK calls RecoverySystem.verifyPackage")
                 
-                information['Recovery_VerifyPackage']        = recovery_verifyPackage
+                information['Recovery_VerifyPackage']           = recovery_verifyPackage
+                information['Recovery_VerifyPackage_sources']   = recovery_verifyPackage_sources
 
             if self.__check_dict_key(information, 'Recovery_InstallPackage'):
-                recovery_installPackage = self.checkInstallPackage(analysis, package_name)
+                recovery_installPackage, recovery_installPackage_sources = self.checkInstallPackage(analysis, package_name)
                 if recovery_installPackage:
                     Debug.log("APK calls RecoverySystem.installPackage")
 
-                information['Recovery_InstallPackage']       = recovery_installPackage
+                information['Recovery_InstallPackage']          = recovery_installPackage
+                information['Recovery_InstallPackage_sources']  = recovery_installPackage_sources
             
             if self.__check_dict_key(information, 'UpdateEngine_ApplyPayload'):
-                updateEngine_applyPayload = self.checkApplyPayload(analysis, package_name)
+                updateEngine_applyPayload, updateEngine_applyPayload_sources = self.checkApplyPayload(analysis, package_name)
                 if updateEngine_applyPayload:
                     Debug.log("APK calls UpdateEngine.applyPayload")
 
-                information['UpdateEngine_ApplyPayload']         = updateEngine_applyPayload
+                information['UpdateEngine_ApplyPayload']            = updateEngine_applyPayload
+                information['UpdateEngine_ApplyPayload_sources']    = updateEngine_applyPayload_sources
             
             if self.__check_dict_key(information, 'PackageManager_installPackage'):
-                packageManager_installPackage = self.checkPmInstallPackage(analysis, package_name)
+                packageManager_installPackage, packageManager_installPackage_sources = self.checkPmInstallPackage(analysis, package_name)
                 if packageManager_installPackage:
                     Debug.log("APK calls PackageManager.installPackage")
 
                 information['PackageManager_installPackage'] = packageManager_installPackage
+                information['PackageManager_installPackage_sources'] = packageManager_installPackage_sources
 
             if self.__check_dict_key(information, 'PackageManager_deletePackage'):
-                packageManager_deletePackage = self.checkPmDeletePackage(analysis, package_name)
+                packageManager_deletePackage, packageManager_deletePackage_sources = self.checkPmDeletePackage(analysis, package_name)
                 if packageManager_deletePackage:
                     Debug.log("APK calls PackageManager.deletePackage")
 
                 information['PackageManager_deletePackage'] = packageManager_deletePackage
+                information['PackageManager_deletePackage_sources'] = packageManager_deletePackage_sources
 
             if self.__check_dict_key(information, 'PackageManager_grantRuntimePermission'):
-                packageManager_grantRuntimePermission = self.checkPmGrantRuntimePermission(analysis, package_name)
+                packageManager_grantRuntimePermission, packageManager_grantRuntimePermission_sources = self.checkPmGrantRuntimePermission(analysis, package_name)
                 if packageManager_grantRuntimePermission:
                     Debug.log("APK calls PackageManager.grantRuntimePermission")
 
                 information['PackageManager_grantRuntimePermission'] = packageManager_grantRuntimePermission
+                information['PackageManager_grantRuntimePermission_sources'] = packageManager_grantRuntimePermission_sources
 
             if self.__check_dict_key(information, 'PackageManager_revokeRuntimePermission'):
-                packageManager_revokeRuntimePermission = self.checkPmRevokeRuntimePermission(analysis, package_name)
+                packageManager_revokeRuntimePermission, packageManager_revokeRuntimePermission_sources = self.checkPmRevokeRuntimePermission(analysis, package_name)
                 if packageManager_revokeRuntimePermission:
                     Debug.log("APK calls PackageManager.revokeRuntimePermission")
 
                 information['PackageManager_revokeRuntimePermission'] = packageManager_revokeRuntimePermission
+                information['PackageManager_revokeRuntimePermission_sources'] = packageManager_revokeRuntimePermission_sources
             
             if self.__check_dict_key(information, 'SSL/TLS'):
                 ssl_tls = self.checkSSLTLS(analysis, package_name)
@@ -508,30 +540,39 @@ class FotaAnalyzer:
                 information['Dynamic_Dex_Loading'] = dynamic_dex_loading
                 information['Dynamic_Dex_Loading_Refs'] = dex_loaders
 
+            if self.__check_dict_key(information, 'samsung_applicationpolicy_installapplication'):
+                samsung_applicationpolicy_installapplication, samsung_applicationpolicy_installapplication_sources = self.checkApplicationPolicyInstallpackage(analysis, package_name)
+                if samsung_applicationpolicy_installapplication:
+                    Debug.log("APK uses ApplicationPolicy.installApplication")
+                information['samsung_applicationpolicy_installapplication'] = samsung_applicationpolicy_installapplication
+                information['samsung_applicationpolicy_installapplication_sources'] = samsung_applicationpolicy_installapplication_sources
+
             # check of string
 
             if self.__check_dict_key(information, 'Pm_Install'):
-                pm_install = self.checkPmInstall(analysis, package_name)
+                pm_install, pm_install_sources = self.checkPmInstall(analysis, package_name)
                 if pm_install:
                     Debug.log("APK uses pm install")
                 
                 information['Pm_Install']           = pm_install
+                information['Pm_Install_sources']   = pm_install_sources
 
             if self.__check_dict_key(information, 'Intent_Vnd_Android'):
-                intent_vnd_android = self.checkVndAndroidPackageArchive(analysis, package_name)
+                intent_vnd_android, intent_vnd_android_sources = self.checkVndAndroidPackageArchive(analysis, package_name)
                 if intent_vnd_android:
                     Debug.log("APK uses application/vnd.android.package-archive")
 
-                information['Intent_Vnd_Android']   = intent_vnd_android
+                information['Intent_Vnd_Android']           = intent_vnd_android
+                information['Intent_Vnd_Android_sources']   = intent_vnd_android_sources
 
             if self.__check_dict_key(information, 'Cache_Recovery_Command_Update'):
-                cache_recovery_command = self.checkCacheRecoveryCommand(analysis, package_name) or \
-                    self.checkCacheRecoveryAndCommand(analysis, package_name)
+                cache_recovery_command = self.checkCacheRecoveryCommand(analysis, package_name)[0] or self.checkCacheRecoveryAndCommand(analysis, package_name)[0]
+                cache_recovery_command_sources = self.checkCacheRecoveryCommand(analysis, package_name)[1] + self.checkCacheRecoveryAndCommand(analysis, package_name)[1]
 
                 if cache_recovery_command:
                     Debug.log("APK probably modifies file /cache/recovery/command")                    
                     
-                __update_package = self.check__Update_Package(analysis, package_name)
+                __update_package, __update_package_sources = self.check__Update_Package(analysis, package_name)
                 if __update_package:
                     Debug.log("APK has string --update_package")
                 
@@ -539,20 +580,32 @@ class FotaAnalyzer:
                     information['Cache_Recovery_Command_Update'] = True
                 else:
                     information['Cache_Recovery_Command_Update'] = False
+                information['Cache_Recovery_Command_Update_sources'] = cache_recovery_command_sources + __update_package_sources 
 
             if self.__check_dict_key(information, 'ota_certs_zip'):
-                ota_certs_zip = self.checkOTACertsZip(analysis, package_name)
+                ota_certs_zip, ota_certs_zip_sources = self.checkOTACertsZip(analysis, package_name)
                 if ota_certs_zip:
                     Debug.log("APK refers to otacerts.zip")
 
-                information['ota_certs_zip']   = ota_certs_zip
+                information['ota_certs_zip']            = ota_certs_zip
+                information['ota_certs_zip_sources']    = ota_certs_zip_sources
 
             if self.__check_dict_key(information, 'ota_update_zip'):
-                ota_update_zip = self.checkOTAUpdateZip(analysis, package_name)
+                ota_update_zip, ota_update_zip_sources = self.checkOTAUpdateZip(analysis, package_name)
                 if ota_update_zip:
                     Debug.log("APK refers to otacerts.zip")
 
-                information['ota_update_zip']   = ota_update_zip
+                information['ota_update_zip']           = ota_update_zip
+                information['ota_update_zip_sources']   = ota_update_zip_sources
+            
+            if self.__check_dict_key(information, 'lenovo_com_kukool_action_silient_install'):
+                lenovo_com_kukool_action_silient_install, lenovo_com_kukool_action_silient_install_sources = self.checkComKukoolActionSilientInstallIntentAction(analysis, package_name)
+                if lenovo_com_kukool_action_silient_install:
+                    Debug.log("APK uses intent action com.kukool.ACTION_SILIENT_INSTALL")
+                
+                information['lenovo_com_kukool_action_silient_install']            = lenovo_com_kukool_action_silient_install
+                information['lenovo_com_kukool_action_silient_install_sources']    = lenovo_com_kukool_action_silient_install_sources
+                
             
             # commonly apks and odex will contain
             # just one dex file
@@ -646,6 +699,7 @@ class FotaAnalyzer:
         """
         classes = list(analysis.get_classes())
         methods = []
+        sources = []
         
         Debug.log("Checking for the presence of class %s and method %s" % (class_name, method_name))
             
@@ -667,11 +721,11 @@ class FotaAnalyzer:
                 # is from the specified package name
                 for _, call, _ in xrefs_to_method:
                     Debug.analyst("{} -- {} is called from -> {} -- {}".format(class_name, method_name, call.class_name, call.name))
-                    if package_name in str(call.class_name):
-                        Debug.log("Found call!")
-                        return True
-
-        return False
+                    sources.append(str(call.class_name) + '->' + str(call.name))
+                
+        if len(sources) > 0:
+            return True, sources
+        return False, []
     
     def checkReferencesToMethodGetMethodXrefs(self, analysis, package_name, class_name, method_name):
         """
@@ -858,6 +912,9 @@ class FotaAnalyzer:
         
         return list(detected_calls)
 
+    def checkApplicationPolicyInstallpackage(self, analysis, package_name):
+        return self.checkReferencesToMethod(analysis=analysis, package_name=package_name, class_name="Lcom/samsung/android/knox/application/ApplicationPolicy;", method_name="installApplication")
+
     '''
     String checks in code
     '''
@@ -865,24 +922,29 @@ class FotaAnalyzer:
         return self.checkReferencesToString(analysis=analysis, package_name=package_name, regex_string="/cache/recovery/command")
     
     def checkCacheRecoveryAndCommand(self, analysis, package_name):
-        if not self.checkReferencesToString(analysis=analysis, package_name=package_name, regex_string="/cache/recovery"):
-            return False
-        if not self.checkReferencesToString(analysis=analysis, package_name=package_name, regex_string="command"):
-            return False
+        sources = []
+
+        if not self.checkReferencesToString(analysis=analysis, package_name=package_name, regex_string="/cache/recovery")[0]:
+            return False, []
+        if not self.checkReferencesToString(analysis=analysis, package_name=package_name, regex_string="command")[0]:
+            return False, []
         
         cache_recovery_classes = self.getClassesFromReferencesToString(analysis=analysis, package_name=package_name, regex_string="/cache/recovery")
         if len(cache_recovery_classes) == 0:
-            return False
+            return False, []
         
         command_classes = self.getClassesFromReferencesToString(analysis=analysis, package_name=package_name, regex_string="command")
         if len(command_classes) == 0:
-            return False
+            return False, []
         
+        sources += self.checkReferencesToString(analysis=analysis, package_name=package_name, regex_string="/cache/recovery")[1]
+        sources += self.checkReferencesToString(analysis=analysis, package_name=package_name, regex_string="command")[1]
+
         for class_ in cache_recovery_classes:
             if class_ in command_classes:
                 Debug.analyst("'/cache/recovery' and 'command' are used both in the --> {} as separated strings".format(class_))
-                return True
-        return False
+                return True, sources
+        return False, []
 
     def check__Update_Package(self, analysis, package_name):
         return self.checkReferencesToString(analysis=analysis, package_name=package_name, regex_string="--update_package")
@@ -899,6 +961,10 @@ class FotaAnalyzer:
     def checkOTAUpdateZip(self, analysis, package_name):
         return self.checkReferencesToString(analysis=analysis, package_name=package_name, regex_string=".*ota_update.zip")
     
+    def checkComKukoolActionSilientInstallIntentAction(self, analysis, package_name):
+        # found on com.lenovo.xlauncher
+        return self.checkReferencesToString(analysis=analysis, package_name=package_name, regex_string="com.kukool.ACTION_SILIENT_INSTALL")
+
     def checkReferencesToString(self, analysis, package_name, regex_string):
         """
         Method to search for a given regex in a given package.
@@ -910,7 +976,7 @@ class FotaAnalyzer:
         :rtype: bool
         """
         string_analysis = list(analysis.find_strings(regex_string))
-
+        sources = []
         # package paths in calls are given with
         # slashes
         package_name = package_name.replace(".","/")
@@ -919,11 +985,11 @@ class FotaAnalyzer:
             xrefs_to_string = string.get_xref_from()
             for _, method in xrefs_to_string:
                 Debug.analyst("{} is used in --> {} -- {}".format(regex_string, method.class_name, method.name))
-                if package_name in str(method.class_name):
-                    Debug.log("Found used string!")
-                    return True
+                sources.append(str(method.class_name) + '->' + str(method.name))
         
-        return False
+        if len(sources) > 0:
+            return True, sources
+        return False, []
 
     '''
     Some getters
@@ -1054,6 +1120,14 @@ def main():
     md5=args.md5hash
     dex=args.dex
     
+    if not os.path.exists(args.input):
+        print("File '%s' does not exists, exiting..." % (args.input))
+        sys.exit(1)
+    
+    if not os.access(args.input, os.R_OK):
+        print("File '%s' is not readable, exiting..." % (args.input))
+        sys.exit(1)
+
     if os.path.isdir(args.input):
         fotaAnalyzer = FotaAnalyzer(args.input, True, md5=md5, dex=dex)
     elif os.path.isfile(args.input):
