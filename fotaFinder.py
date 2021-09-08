@@ -997,21 +997,26 @@ class FotaAnalyzer:
 
         if not open_session:
             return False,[]
+        
+        open_session_sources_clean = [x.split('->')[0] for x in open_session_sources]
 
         session_commit, session_commit_sources = self.checkReferencesToMethod(analysis=analysis, package_name=package_name, class_name="Landroid/content/pm/PackageInstaller$Session;", method_name="commit")
 
         if not session_commit:
             return False,[]
         
+        session_commit_sources_clean = [x.split('->')[0] for x in session_commit_sources]
+
         found_xrefs = list()
 
         # for the moment just try to find the pattern in the same
         # class->method
         for csr in create_session_sources:
-            if csr not in open_session_sources:
+            csr = csr.split('->')[0]
+            if csr not in open_session_sources_clean:
                 return False,[]
             
-            if csr not in session_commit_sources:
+            if csr not in session_commit_sources_clean:
                 return False,[]
             
             found_xrefs.append(csr)
