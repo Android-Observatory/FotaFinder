@@ -272,6 +272,10 @@ class FotaAnalyzer:
         packageManager_grantRuntimePermission_sources   = []
         packageManager_revokeRuntimePermission          = False
         packageManager_revokeRuntimePermission_sources  = []
+        packageInstaller_uninstall                      = False
+        packageInstaller_uninstall_sources              = []
+        packageInstaller_sessionInstall                 = False
+        packageInstaller_sessionInstall_sources         = []
         ssl_tls                    = False
         http                       = False
         dynamic_dex_loading        = False
@@ -283,18 +287,24 @@ class FotaAnalyzer:
         samsung_applicationpolicy_installapplication_sources    = []
         
         # strings in code
-        pm_install                      = False
-        pm_install_sources              = []
-        intent_vnd_android              = False
-        intent_vnd_android_sources      = []
-        cache_recovery_command          = False
-        cache_recovery_command_sources  = []
-        __update_package                = False
-        __update_package_sources        = []
-        ota_certs_zip                   = False
-        ota_certs_zip_sources           = []
-        ota_update_zip                  = False
-        ota_update_zip_sources          = []
+        pm_install                                  = False
+        pm_install_sources                          = []
+        pm_uninstall                                = False
+        pm_uninstall_sources                        = []
+        intent_vnd_android                          = False
+        intent_vnd_android_sources                  = []
+        intent_action_install_package               = False
+        intent_action_install_package_sources       = []
+        intent_action_uninstall_package             = False
+        intent_action_uninstall_package_sources     = []
+        cache_recovery_command                      = False
+        cache_recovery_command_sources              = []
+        __update_package                            = False
+        __update_package_sources                    = []
+        ota_certs_zip                               = False
+        ota_certs_zip_sources                       = []
+        ota_update_zip                              = False
+        ota_update_zip_sources                      = []
 
         # specific strings
 
@@ -322,6 +332,8 @@ class FotaAnalyzer:
         # list of permissions could exist
         install_package_perm       = False
         delete_packages_perm       = False
+        request_install_packages_perm   = False
+        request_delete_packages_perm    = False
         
         # output information
         information                = {}
@@ -450,6 +462,23 @@ class FotaAnalyzer:
 
         information['Delete_Packages_Permission'] = delete_packages_perm
 
+        # Allows an application to request installing packages. 
+        # Apps targeting APIs greater than 25 (Android 7.1) must 
+        # hold this permission in order to use Intent.ACTION_INSTALL_PACKAGE. 
+        if "android.permission.REQUEST_INSTALL_PACKAGES" in aosp_permissions:
+            request_install_packages_perm   = True
+        
+        information['Request_Install_Packages_Permission'] = request_install_packages_perm
+
+        if "android.permission.REQUEST_DELETE_PACKAGES" in aosp_permissions:
+            request_delete_packages_perm    = True
+        
+        # Allows an application to request deleting packages. 
+        # Apps targeting APIs Build.VERSION_CODES.P or greater must 
+        # hold this permission in order to use Intent.ACTION_UNINSTALL_PACKAGE 
+        # or PackageInstaller.uninstall(VersionedPackage, IntentSender)
+        information['Request_Delete_Packages_Permission'] = request_delete_packages_perm
+
         """
         From here it starts all the analysis that depends on analysis
         object, we will create an infinite loop in order to analyze 
@@ -547,6 +576,22 @@ class FotaAnalyzer:
                 information['samsung_applicationpolicy_installapplication'] = samsung_applicationpolicy_installapplication
                 information['samsung_applicationpolicy_installapplication_sources'] = samsung_applicationpolicy_installapplication_sources
 
+            if self.__check_dict_key(information, 'PackageInstaller_Uninstall'):
+                packageInstaller_uninstall, packageInstaller_uninstall_sources = self.checkPackageInstallerUninstall(analysis, package_name)
+                if packageInstaller_uninstall:
+                    Debug.log("APK uses PackageInstaller.uninstall")
+                
+                information['PackageInstaller_Uninstall'] = packageInstaller_uninstall
+                information['PackageInstaller_Uninstall_sources'] = packageInstaller_uninstall_sources
+
+            if self.__check_dict_key(information, 'PackageInstaller_SessionInstall'):
+                packageInstaller_sessionInstall, packageInstaller_sessionInstall_sources = self.checkpackageInstallersessionInstall(analysis, package_name)
+                if packageInstaller_sessionInstall:
+                    Debug.log("APK uses PackageInstaller.Session")
+                
+                information['PackageInstaller_SessionInstall'] = packageInstaller_sessionInstall
+                information['PackageInstaller_SessionInstall_sources'] = packageInstaller_sessionInstall_sources
+
             # check of string
 
             if self.__check_dict_key(information, 'Pm_Install'):
@@ -556,6 +601,14 @@ class FotaAnalyzer:
                 
                 information['Pm_Install']           = pm_install
                 information['Pm_Install_sources']   = pm_install_sources
+            
+            if self.__check_dict_key(information, 'Pm_Uninstall'):
+                pm_uninstall, pm_uninstall_sources = self.checkPmUninstall(analysis, package_name)
+                if pm_uninstall:
+                    Debug.log("APK uses pm uninstall")
+
+                information['Pm_Uninstall']         = pm_uninstall
+                information['Pm_Uninstall_sources'] = pm_uninstall_sources
 
             if self.__check_dict_key(information, 'Intent_Vnd_Android'):
                 intent_vnd_android, intent_vnd_android_sources = self.checkVndAndroidPackageArchive(analysis, package_name)
@@ -564,6 +617,22 @@ class FotaAnalyzer:
 
                 information['Intent_Vnd_Android']           = intent_vnd_android
                 information['Intent_Vnd_Android_sources']   = intent_vnd_android_sources
+            
+            if self.__check_dict_key(information, 'Intent_Action_Install_Package'):
+                intent_action_install_package, intent_action_install_package_sources = self.checkActionInstallPackage(analysis, package_name)
+                if intent_action_install_package:
+                    Debug.log("APK uses ACTION_INSTALL_PACKAGE")
+                
+                information['Intent_Action_Install_Package'] = intent_action_install_package
+                information['Intent_Action_Install_Package_sources'] = intent_action_install_package_sources
+            
+            if self.__check_dict_key(information, 'Intent_Action_Uninstall_Package'):
+                intent_action_uninstall_package, intent_action_uninstall_package_sources = self.checkActionUninstallPackage(analysis, package_name)
+                if intent_action_uninstall_package:
+                    Debug.log("APK uses ACTION_UNINSTALL_PACKAGE")
+                
+                information['Intent_Action_Uninstall_Package'] = intent_action_uninstall_package
+                information['Intent_Action_Uninstall_Package_sources'] = intent_action_uninstall_package_sources
 
             if self.__check_dict_key(information, 'Cache_Recovery_Command_Update'):
                 cache_recovery_command = self.checkCacheRecoveryCommand(analysis, package_name)[0] or self.checkCacheRecoveryAndCommand(analysis, package_name)[0]
@@ -915,6 +984,49 @@ class FotaAnalyzer:
     def checkApplicationPolicyInstallpackage(self, analysis, package_name):
         return self.checkReferencesToMethod(analysis=analysis, package_name=package_name, class_name="Lcom/samsung/android/knox/application/ApplicationPolicy;", method_name="installApplication")
 
+    def checkPackageInstallerUninstall(self, analysis, package_name):
+        return self.checkReferencesToMethod(analysis=analysis, package_name=package_name, class_name="Landroid/content/pm/PackageInstaller;", method_name="uninstall")
+
+    def checkpackageInstallersessionInstall(self, analysis, package_name):
+        create_session, create_session_sources = self.checkReferencesToMethod(analysis=analysis, package_name=package_name, class_name="Landroid/content/pm/PackageInstaller;", method_name="createSession")
+
+        if not create_session:
+            return False,[]
+        
+        open_session, open_session_sources = self.checkReferencesToMethod(analysis=analysis, package_name=package_name, class_name="Landroid/content/pm/PackageInstaller;", method_name="openSession")
+
+        if not open_session:
+            return False,[]
+        
+        open_session_sources_clean = [x.split('->')[0] for x in open_session_sources]
+
+        session_commit, session_commit_sources = self.checkReferencesToMethod(analysis=analysis, package_name=package_name, class_name="Landroid/content/pm/PackageInstaller$Session;", method_name="commit")
+
+        if not session_commit:
+            return False,[]
+        
+        session_commit_sources_clean = [x.split('->')[0] for x in session_commit_sources]
+
+        found_xrefs = list()
+
+        # for the moment just try to find the pattern in the same
+        # class->method
+        for csr in create_session_sources:
+            csr = csr.split('->')[0]
+            if csr not in open_session_sources_clean:
+                return False,[]
+            
+            if csr not in session_commit_sources_clean:
+                return False,[]
+            
+            found_xrefs.append(csr)
+        
+        if len(found_xrefs) == 0:
+            return False,[]
+        
+        return True, found_xrefs
+
+
     '''
     String checks in code
     '''
@@ -952,6 +1064,9 @@ class FotaAnalyzer:
     def checkPmInstall(self, analysis, package_name):
         return self.checkReferencesToString(analysis=analysis, package_name=package_name, regex_string="pm install.*")
 
+    def checkPmUninstall(self, analysis, package_name):
+        return self.checkReferencesToString(analysis=analysis, package_name=package_name, regex_string="pm uninstall.*")
+
     def checkVndAndroidPackageArchive(self, analysis, package_name):
         return self.checkReferencesToString(analysis=analysis, package_name=package_name, regex_string="application/vnd.android.package-archive")
 
@@ -964,6 +1079,13 @@ class FotaAnalyzer:
     def checkComKukoolActionSilientInstallIntentAction(self, analysis, package_name):
         # found on com.lenovo.xlauncher
         return self.checkReferencesToString(analysis=analysis, package_name=package_name, regex_string="com.kukool.ACTION_SILIENT_INSTALL")
+
+    def checkActionInstallPackage(self, analysis, package_name):
+        return self.checkReferencesToString(analysis=analysis, package_name=package_name, regex_string="android.intent.action.INSTALL_PACKAGE")
+    
+    def checkActionUninstallPackage(self, analysis, package_name):
+        return self.checkReferencesToString(analysis=analysis, package_name=package_name, regex_string="android.intent.action.UNINSTALL_PACKAGE")
+
 
     def checkReferencesToString(self, analysis, package_name, regex_string):
         """
