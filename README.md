@@ -1,9 +1,9 @@
 # FotaFinder
-Tool for extracting different installation of updates or installation of other apps signals to detect FOTA &amp; OTA.
+FotaFinder is a static analysis tool to detect if an Android app contains Firmware-Over-The-Air (FOTA) or OTA capablities, i.e., the ability to install system updates (FOTA) or just regular apps (OTA). FotaFinder operates by statically identifying signals in the code that indicate installation capabilities.
 
 ## Project
 
-This tool is part of a research done by UC3M COSEC Lab together with IMDEA Networks and NortonLifelock Research Group, you can find more information about the research in the paper presented in the **42nd IEEE Symposium on Security and Privacy**: [Trouble Over-The-Air: An Analysis of FOTA Apps in the Android Ecosystem](https://dspace.networks.imdea.org/bitstream/handle/20.500.12761/957/conference-proceeding.pdf)
+This tool is part of a joint research project among UC3M COSEC Lab, the IAG group at IMDEA Networks, and NortonLifelock Research Group. You can find more information about the research in a paper presented in the **42nd IEEE Symposium on Security and Privacy**: [Trouble Over-The-Air: An Analysis of FOTA Apps in the Android Ecosystem](https://dspace.networks.imdea.org/bitstream/handle/20.500.12761/957/conference-proceeding.pdf)
 
 ## Cite FotaFinder
 
