@@ -22,7 +22,7 @@ If you use FotaFinder as part of your research cite the tool using the next:
 
 ## License
 
-This project is under a MIT License, please check the file [LICENSE](./LICENSE) to find more information about it.
+This project is licensed under a MIT License, please check the file [LICENSE](./LICENSE) to find more information about it.
 
 ## Contact Information
 
